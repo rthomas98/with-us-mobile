@@ -5,6 +5,10 @@
 
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
+const zorba = '#A59D94';
+const white = '#ffffff';
+const heavyMetal = '#222720';
+const dawn = '#A9A39A';
 
 export const Colors = {
   light: {

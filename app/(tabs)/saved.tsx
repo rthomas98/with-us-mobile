@@ -3,11 +3,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 
-export default function HomeScreen() {
+export default function SavedScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <ThemedText style={styles.text}>Home</ThemedText>
+        <ThemedText style={styles.text}>Saved</ThemedText>
       </View>
     </SafeAreaView>
   );

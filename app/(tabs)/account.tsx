@@ -3,11 +3,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 
-export default function HomeScreen() {
+export default function AccountScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <ThemedText style={styles.text}>Home</ThemedText>
+        <ThemedText style={styles.text}>Account</ThemedText>
       </View>
     </SafeAreaView>
   );
