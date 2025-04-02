@@ -29,4 +29,8 @@ export const Colors = {
     tabIconSelected: tintColorDark,
     border: '#2E3235',
   },
+  zorba: zorba,
+  white: white,
+  heavyMetal: heavyMetal,
+  dawn: dawn,
 };

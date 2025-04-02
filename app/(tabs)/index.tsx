@@ -119,12 +119,18 @@ export default function DiscoverScreen() {
   };
 
   const renderProduct = ({ item }: { item: typeof products[0] }) => (
-    <View style={styles.productCard}>
+    <TouchableOpacity 
+      style={styles.productCard}
+      onPress={() => router.push(`/product/${item.id}`)}
+    >
       <View style={styles.imageContainer}>
         <Image source={item.image} style={styles.productImage} />
         <TouchableOpacity 
           style={styles.favoriteButton}
-          onPress={() => toggleFavorite(item.id)}
+          onPress={(e) => {
+            e.stopPropagation(); // Prevent triggering the parent onPress
+            toggleFavorite(item.id);
+          }}
         >
           <Ionicons 
             name={favorites.includes(item.id) ? "heart" : "heart-outline"} 
@@ -140,7 +146,7 @@ export default function DiscoverScreen() {
           <Text style={styles.discountText}>-{item.discount}%</Text>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
