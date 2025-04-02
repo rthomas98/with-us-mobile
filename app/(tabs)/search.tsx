@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCart } from '@/context/CartContext';
 
 // Define colors
 const white = '#FFFFFF';
@@ -54,6 +55,7 @@ export default function SearchScreen() {
   const [showResults, setShowResults] = useState(false);
   const [noResults, setNoResults] = useState(false);
   const [showKeyboard, setShowKeyboard] = useState(false);
+  const { addToCart } = useCart();
   
   // Sample product data
   const products: Product[] = [
@@ -342,13 +344,24 @@ export default function SearchScreen() {
                       <View style={styles.productInfo}>
                         <Text style={styles.productName}>{product.name}</Text>
                         <View style={styles.priceContainer}>
-                          <Text style={styles.productPrice}>${(product.price).toLocaleString()}</Text>
+                          <Text style={styles.productPrice}>{formatPrice(product.price)}</Text>
                           {product.discountPercentage && (
                             <Text style={styles.discountText}>-{product.discountPercentage}%</Text>
                           )}
                         </View>
                       </View>
-                      <Ionicons name="arrow-forward" size={20} color={black} style={styles.arrowIcon} />
+                      <View style={styles.actionButtons}>
+                        <TouchableOpacity 
+                          style={styles.addToCartButton}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            addToCart(product);
+                          }}
+                        >
+                          <Ionicons name="cart-outline" size={20} color={white} />
+                        </TouchableOpacity>
+                        <Ionicons name="arrow-forward" size={20} color={black} style={styles.arrowIcon} />
+                      </View>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -559,15 +572,14 @@ const styles = StyleSheet.create({
   productItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: lightGray,
   },
   productImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
+    width: 80,
+    height: 80,
+    borderRadius: 8,
     marginRight: 12,
   },
   productInfo: {
@@ -584,16 +596,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   productPrice: {
-    fontSize: 14,
-    color: darkGray,
+    fontSize: 16,
+    fontWeight: '600',
+    color: black,
   },
   discountText: {
     fontSize: 14,
-    color: 'red',
+    fontWeight: '500',
+    color: red,
     marginLeft: 8,
   },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addToCartButton: {
+    backgroundColor: black,
+    borderRadius: 20,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
   arrowIcon: {
-    marginLeft: 8,
+    marginLeft: 5,
   },
   keyboardContainer: {
     backgroundColor: '#D1D5DB',

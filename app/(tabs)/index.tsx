@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
+import { useCart } from '@/context/CartContext';
 
 // Get screen dimensions
 const { width } = Dimensions.get('window');
@@ -82,6 +83,7 @@ export default function DiscoverScreen() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 19]);
   const [selectedSize, setSelectedSize] = useState('L');
   const [showSizeOptions, setShowSizeOptions] = useState(false);
+  const { addToCart } = useCart();
 
   const toggleFavorite = (productId: string) => {
     if (favorites.includes(productId)) {
@@ -137,6 +139,15 @@ export default function DiscoverScreen() {
             size={24} 
             color={favorites.includes(item.id) ? "#FF6B6B" : black} 
           />
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.addToCartButton}
+          onPress={(e) => {
+            e.stopPropagation(); // Prevent triggering the parent onPress
+            addToCart(item);
+          }}
+        >
+          <Ionicons name="cart-outline" size={20} color={white} />
         </TouchableOpacity>
       </View>
       <Text style={styles.productName}>{item.name}</Text>
@@ -471,13 +482,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   imageContainer: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 10,
-    backgroundColor: gray,
     position: 'relative',
+    width: '100%',
+    height: 180,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginBottom: 8,
   },
   productImage: {
     width: '100%',
@@ -486,19 +496,25 @@ const styles = StyleSheet.create({
   },
   favoriteButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 20,
-    padding: 8,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addToCartButton: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: black,
+    borderRadius: 20,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   productName: {
     fontSize: 16,
