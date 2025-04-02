@@ -11,16 +11,13 @@ export default function AuthLayout() {
   return (
     <>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: Colors[colorScheme ?? 'light'].background,
-          },
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-          headerTintColor: Colors[colorScheme ?? 'light'].text,
-        }}
+      <Stack 
+        initialRouteName="index" 
+        screenOptions={{ 
+          animation: 'slide_from_right',
+          headerShown: false,  
+          contentStyle: { backgroundColor: '#ffffff' },
+        }} 
       />
     </>
   );

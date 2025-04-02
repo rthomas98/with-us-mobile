@@ -1,112 +1,76 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
-import { SvgXml } from 'react-native-svg';
+import { View, StyleSheet, Dimensions, Image } from 'react-native';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import { ThemedText } from '../ThemedText';
-
-// Import SVG assets as strings
-import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
 
-// SVG file paths
-const LINKS_SVG_PATH = '../../assets/images/links.svg';
-const LOGO_SVG_PATH = '../../assets/images/w-logo.svg';
+// Brand colors
+const zorba = '#A59D94';
+const white = '#ffffff';
+const heavyMetal = '#222720';
+const dawn = '#A9A39A';
 
 interface GenerateSplashImageProps {
   onCapture: (uri: string) => void;
   mode?: 'light' | 'dark';
 }
 
-interface GenerateSplashImageState {
-  linksXml: string;
-  logoXml: string;
-  assetsLoaded: boolean;
-}
-
-class GenerateSplashImage extends React.Component<GenerateSplashImageProps, GenerateSplashImageState> {
+class GenerateSplashImage extends React.Component<GenerateSplashImageProps> {
   viewShotRef = React.createRef<ViewShot>();
   
-  state: GenerateSplashImageState = {
-    linksXml: '',
-    logoXml: '',
-    assetsLoaded: false
-  };
-
-  async componentDidMount() {
-    try {
-      // Load the SVG files
-      const linksAsset = Asset.fromModule(require(LINKS_SVG_PATH));
-      const logoAsset = Asset.fromModule(require(LOGO_SVG_PATH));
-      
-      await Promise.all([linksAsset.downloadAsync(), logoAsset.downloadAsync()]);
-      
-      // Read the SVG files as text
-      const linksContent = await FileSystem.readAsStringAsync(linksAsset.localUri || '');
-      const logoContent = await FileSystem.readAsStringAsync(logoAsset.localUri || '');
-      
-      this.setState({ 
-        linksXml: linksContent, 
-        logoXml: logoContent,
-        assetsLoaded: true
-      }, this.captureImage);
-    } catch (error) {
-      console.error('Error loading SVG assets:', error);
-      // Fallback to direct require if the above method fails
-      try {
-        this.setState({ 
-          linksXml: require(LINKS_SVG_PATH), 
-          logoXml: require(LOGO_SVG_PATH),
-          assetsLoaded: true
-        }, this.captureImage);
-      } catch (e) {
-        console.error('Fallback loading failed:', e);
-      }
-    }
+  componentDidMount() {
+    // Capture the image after a short delay to ensure rendering is complete
+    setTimeout(() => {
+      this.captureImage();
+    }, 100);
   }
-
+  
   captureImage = async () => {
-    if (this.state.assetsLoaded && this.viewShotRef.current) {
+    if (this.viewShotRef.current) {
       try {
-        // Using captureRef as a safer alternative that handles null checks
-        const uri = await captureRef(this.viewShotRef);
+        const uri = await captureRef(this.viewShotRef.current, {
+          format: 'png',
+          quality: 1,
+          result: 'data-uri',
+        });
+        
         this.props.onCapture(uri);
       } catch (error) {
         console.error('Error capturing splash image:', error);
       }
     }
   };
-
+  
   render() {
     const { mode = 'light' } = this.props;
     const isDarkMode = mode === 'dark';
-    const backgroundColor = isDarkMode ? '#222720' : '#ffffff';
+    const backgroundColor = isDarkMode ? heavyMetal : white;
     
-    if (!this.state.assetsLoaded) {
-      return (
-        <View style={[styles.container, { backgroundColor }]} />
-      );
-    }
-
     return (
-      <ViewShot ref={this.viewShotRef} options={{ format: 'png', quality: 1 }}>
+      <ViewShot ref={this.viewShotRef} style={styles.container}>
         <View style={[styles.container, { backgroundColor }]}>
-          {/* Background pattern using links.svg */}
+          {/* Background pattern */}
           <View style={styles.backgroundPattern}>
-            <SvgXml xml={this.state.linksXml} width={width * 1.2} height={height * 1.2} />
+            <Image 
+              source={require('../../assets/images/links.png')} 
+              style={styles.patternImage}
+              resizeMode="cover"
+            />
           </View>
           
           {/* Centered logo */}
           <View style={styles.logoContainer}>
-            <SvgXml xml={this.state.logoXml} width={200} height={200} />
+            <Image 
+              source={require('../../assets/images/w-logo.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
             
             {/* Brand name */}
-            <View style={{ marginTop: 20 }}>
-              <ThemedText style={styles.brandText} lightColor="#222720" darkColor="#ffffff">
-                WITH US
-              </ThemedText>
+            <View style={styles.textContainer}>
+              <ThemedText style={styles.brandText}>WITH US</ThemedText>
             </View>
           </View>
         </View>
@@ -124,18 +88,32 @@ const styles = StyleSheet.create({
   },
   backgroundPattern: {
     position: 'absolute',
-    top: -50,
-    left: -50,
-    opacity: 0.15, // Subtle background
+    top: 0,
+    left: 0,
+    width: width,
+    height: height,
+    opacity: 0.05,
+  },
+  patternImage: {
+    width: '100%',
+    height: '100%',
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
+  logo: {
+    width: 150,
+    height: 150,
+  },
+  textContainer: {
+    marginTop: 20,
+  },
   brandText: {
     fontSize: 28,
     fontWeight: 'bold',
     letterSpacing: 2,
+    color: heavyMetal,
   },
 });
 

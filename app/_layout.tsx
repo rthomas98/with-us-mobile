@@ -11,7 +11,6 @@ import SplashScreenProvider from '@/components/SplashScreen/SplashScreenProvider
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync()
-  .then(result => console.log(`SplashScreen.preventAutoHideAsync() succeeded: ${result}`))
   .catch(console.warn);
 
 export default function RootLayout() {

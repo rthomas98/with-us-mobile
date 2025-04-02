@@ -1,21 +1,17 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Dimensions, useColorScheme } from 'react-native';
-import { SvgXml } from 'react-native-svg';
+import { View, StyleSheet, Animated, Dimensions, useColorScheme, Image } from 'react-native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { ThemedText } from '../ThemedText';
 
-// Import SVG assets as strings
-// We need to read the SVG files as strings since we can't directly import them as React components
-import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
-
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
 
-// SVG file paths
-const LINKS_SVG_PATH = '../../assets/images/links.svg';
-const LOGO_SVG_PATH = '../../assets/images/w-logo.svg';
+// Brand colors
+const zorba = '#A59D94';
+const white = '#ffffff';
+const heavyMetal = '#222720';
+const dawn = '#A9A39A';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -28,10 +24,6 @@ const CustomSplashScreen: React.FC<{ onFinish: () => void }> = ({ onFinish }) =>
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const textFadeAnim = useRef(new Animated.Value(0)).current;
   
-  // SVG content refs
-  const [linksXml, setLinksXml] = React.useState<string | null>(null);
-  const [logoXml, setLogoXml] = React.useState<string | null>(null);
-  
   // Get color scheme
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
@@ -41,114 +33,72 @@ const CustomSplashScreen: React.FC<{ onFinish: () => void }> = ({ onFinish }) =>
     'SpaceMono': require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  // Load SVG files
+  // Start animations when component mounts
   useEffect(() => {
-    const loadSvgAssets = async () => {
-      try {
-        // Load the SVG files
-        const linksAsset = Asset.fromModule(require(LINKS_SVG_PATH));
-        const logoAsset = Asset.fromModule(require(LOGO_SVG_PATH));
-        
-        await Promise.all([linksAsset.downloadAsync(), logoAsset.downloadAsync()]);
-        
-        // Read the SVG files as text
-        const linksContent = await FileSystem.readAsStringAsync(linksAsset.localUri || '');
-        const logoContent = await FileSystem.readAsStringAsync(logoAsset.localUri || '');
-        
-        setLinksXml(linksContent);
-        setLogoXml(logoContent);
-      } catch (error) {
-        console.error('Error loading SVG assets:', error);
-        // Fallback to direct require if the above method fails
-        try {
-          setLinksXml(require(LINKS_SVG_PATH));
-          setLogoXml(require(LOGO_SVG_PATH));
-        } catch (e) {
-          console.error('Fallback loading failed:', e);
-        }
-      }
-    };
-    
-    loadSvgAssets();
-  }, []);
-
-  useEffect(() => {
-    // Start animations when component mounts and assets are loaded
-    const startAnimations = async () => {
-      // Wait for fonts and SVGs to load
-      if (!fontsLoaded || !linksXml || !logoXml) return;
-      
-      // Hide the native splash screen
-      await SplashScreen.hideAsync();
-      
-      // Start logo animation
+    // Start animations
+    Animated.sequence([
+      // Fade in and scale up the logo
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 800,
           useNativeDriver: true,
         }),
-        Animated.timing(scaleAnim, {
+        Animated.spring(scaleAnim, {
           toValue: 1,
-          duration: 800,
+          friction: 8,
+          tension: 40,
           useNativeDriver: true,
         }),
-      ]).start();
-      
-      // Start text animation after logo animation
-      setTimeout(() => {
-        Animated.timing(textFadeAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }).start();
-      }, 400);
-      
-      // After animations complete, trigger onFinish callback
-      setTimeout(() => {
-        onFinish();
-      }, 2500); // Show splash for 2.5 seconds
-    };
-
-    startAnimations();
-  }, [fadeAnim, scaleAnim, textFadeAnim, onFinish, fontsLoaded, linksXml, logoXml]);
-
-  // If assets aren't loaded yet, show a blank screen
-  if (!linksXml || !logoXml) {
-    return (
-      <View style={[
-        styles.container, 
-        { backgroundColor: isDarkMode ? '#222720' : '#ffffff' }
-      ]} />
-    );
-  }
+      ]),
+      // Fade in the text
+      Animated.timing(textFadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      // Wait a bit before finishing
+      Animated.delay(1000),
+    ]).start(() => {
+      // Animation complete, hide splash screen
+      SplashScreen.hideAsync().catch(() => {
+        /* If there's an error, it's probably because the splash screen has already been hidden */
+      });
+      // Call the onFinish callback
+      onFinish();
+    });
+  }, [fadeAnim, scaleAnim, textFadeAnim, onFinish]);
 
   return (
-    <View style={[
-      styles.container, 
-      { backgroundColor: isDarkMode ? '#222720' : '#ffffff' }
-    ]}>
-      {/* Background pattern using links.svg */}
+    <View style={[styles.container, { backgroundColor: isDarkMode ? heavyMetal : white }]}>
+      {/* Background pattern */}
       <View style={styles.backgroundPattern}>
-        <SvgXml xml={linksXml} width={width * 1.2} height={height * 1.2} />
+        <Image 
+          source={require('../../assets/images/links.png')} 
+          style={styles.patternImage}
+          resizeMode="cover"
+        />
       </View>
       
-      {/* Centered logo with animation */}
+      {/* Centered logo */}
       <Animated.View 
         style={[
           styles.logoContainer,
           {
             opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }]
-          }
+            transform: [{ scale: scaleAnim }],
+          },
         ]}
       >
-        <SvgXml xml={logoXml} width={200} height={200} />
-        
-        {/* Brand name with animation */}
-        <Animated.View style={{ opacity: textFadeAnim, marginTop: 20 }}>
-          <ThemedText style={styles.brandText}>WITH US</ThemedText>
-        </Animated.View>
+        <Image 
+          source={require('../../assets/images/w-logo.png')} 
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </Animated.View>
+      
+      <Animated.View style={[styles.textContainer, { opacity: textFadeAnim }]}>
+        <ThemedText style={styles.text}>WITH US</ThemedText>
       </Animated.View>
     </View>
   );
@@ -159,18 +109,34 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
   backgroundPattern: {
     position: 'absolute',
-    top: -50,
-    left: -50,
-    opacity: 0.15, // Subtle background
+    top: 0,
+    left: 0,
+    width: width,
+    height: height,
+    opacity: 0.15,
+  },
+  patternImage: {
+    width: '100%',
+    height: '100%',
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandText: {
+  logo: {
+    width: 150,
+    height: 150,
+  },
+  textContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  text: {
     fontSize: 28,
     fontWeight: 'bold',
     letterSpacing: 2,

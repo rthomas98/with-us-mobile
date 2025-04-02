@@ -39,6 +39,7 @@ const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, ButtonProps
   style,
   textStyle,
   fullWidth = false,
+  onPress,
   ...props
 }, ref) => {
   // Determine button styles based on variant
@@ -159,6 +160,7 @@ const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, ButtonProps
       style={buttonStyles}
       disabled={disabled || loading}
       activeOpacity={0.7}
+      onPress={onPress}
       {...props}
     >
       {loading ? (
@@ -175,10 +177,11 @@ Button.displayName = 'Button';
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 4,
+    borderRadius: 30, 
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
+    height: 56, 
   },
   text: {
     fontWeight: '600',
