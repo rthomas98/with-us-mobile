@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -58,10 +58,10 @@ const genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
 
 // Country codes for phone
 const countryCodes = [
-  { code: 'US', flag: '🇺🇸', dial: '+1' },
-  { code: 'GB', flag: '🇬🇧', dial: '+44' },
-  { code: 'CA', flag: '🇨🇦', dial: '+1' },
-  { code: 'AU', flag: '🇦🇺', dial: '+61' },
+  { code: 'US', flag: '', dial: '+1' },
+  { code: 'GB', flag: '', dial: '+44' },
+  { code: 'CA', flag: '', dial: '+1' },
+  { code: 'AU', flag: '', dial: '+61' },
 ];
 
 export default function MyDetailsScreen() {
@@ -94,43 +94,41 @@ export default function MyDetailsScreen() {
   };
 
   // Load customer data
-  useEffect(() => {
-    // In a real app, this would be a call to the Shopify API
-    // For example:
-    // const fetchCustomerData = async () => {
-    //   try {
-    //     const response = await fetch('https://your-shopify-store.myshopify.com/api/2023-07/graphql.json', {
-    //       method: 'POST',
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //         'X-Shopify-Storefront-Access-Token': 'your-storefront-access-token'
-    //       },
-    //       body: JSON.stringify({
-    //         query: `
-    //           query {
-    //             customer(customerAccessToken: "customer-access-token") {
-    //               firstName
-    //               lastName
-    //               email
-    //               phone
-    //               # Other customer fields
-    //             }
-    //           }
-    //         `
-    //       })
-    //     });
-    //     const data = await response.json();
-    //     // Process customer data
-    //   } catch (error) {
-    //     console.error('Error fetching customer data:', error);
-    //   }
-    // };
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+  // In a real app, this would be a call to the Shopify API
+  // For example:
+  // const fetchCustomerData = async () => {
+  //   try {
+  //     const response = await fetch('https://your-shopify-store.myshopify.com/api/2023-07/graphql.json', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'X-Shopify-Storefront-Access-Token': 'your-storefront-access-token'
+  //       },
+  //       body: JSON.stringify({
+  //         query: `
+  //           query {
+  //             customer(customerAccessToken: "customer-access-token") {
+  //               firstName
+  //               lastName
+  //               email
+  //               phone
+  //               # Other customer fields
+  //             }
+  //           }
+  //         `
+  //       })
+  //     });
+  //     const data = await response.json();
+  //     // Process customer data
+  //   } catch (error) {
+  //     console.error('Error fetching customer data:', error);
+  //   }
+  // };
+  
+  // Simulate API call
+  setTimeout(() => {
+    setLoading(false);
+  }, 1000);
 
   // Handle form submission
   const handleSubmit = async (values: any) => {
@@ -202,6 +200,8 @@ export default function MyDetailsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>

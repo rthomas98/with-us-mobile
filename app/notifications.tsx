@@ -121,11 +121,9 @@ export default function NotificationsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={black} />
         </TouchableOpacity>
-        <View style={styles.titleContainer}>
-          <Text style={styles.headerTitle}>Notifications</Text>
-        </View>
+        <Text style={styles.headerTitle}>Notifications</Text>
         <TouchableOpacity 
-          style={styles.notificationIcon} 
+          style={styles.trashButton} 
           onPress={hasNotifications ? clearAllNotifications : restoreNotifications}
         >
           <Ionicons 
@@ -205,6 +203,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 60,
     paddingBottom: 16,
@@ -214,15 +213,11 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
-  titleContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
   },
-  notificationIcon: {
+  trashButton: {
     padding: 8,
   },
   scrollView: {

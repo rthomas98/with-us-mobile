@@ -7,7 +7,8 @@ import {
   Platform,
   ScrollView,
   Keyboard,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, Link, router } from 'expo-router';
@@ -64,7 +65,7 @@ export default function LoginScreen() {
           animation: 'slide_from_right',
         }} 
       />
-      <SafeAreaView style={styles.container} edges={['bottom']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidingView}
@@ -75,6 +76,15 @@ export default function LoginScreen() {
               showsVerticalScrollIndicator={false}
             >
               <View style={styles.content}>
+                {/* Logo */}
+                <View style={styles.logoContainer}>
+                  <Image 
+                    source={require('@/assets/images/w-logo.png')} 
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                </View>
+                
                 {/* Header */}
                 <View style={styles.header}>
                   <ThemedText style={styles.title}>Welcome back</ThemedText>
@@ -149,24 +159,36 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingTop: 60, // Increased padding at the top
+    paddingTop: 80, // Increased padding at the top
   },
   content: {
     flex: 1,
     padding: 24,
   },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+  },
   header: {
     marginBottom: 32,
+    marginTop: 10,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     color: heavyMetal,
     marginBottom: 8,
+    textAlign: 'center',
+    lineHeight: 34,
   },
   subtitle: {
     fontSize: 16,
     color: zorba,
+    textAlign: 'center',
   },
   form: {
     width: '100%',

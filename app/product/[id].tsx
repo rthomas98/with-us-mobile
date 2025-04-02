@@ -13,7 +13,7 @@ import {
   Modal,
   TextInput
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView, PinchGestureHandler } from 'react-native-gesture-handler';
@@ -485,6 +485,7 @@ export default function ProductDetailsScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
       
       {/* Header */}

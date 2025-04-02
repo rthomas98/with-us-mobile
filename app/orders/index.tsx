@@ -328,6 +328,12 @@ export default function MyOrdersScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <Stack.Screen 
+        options={{ 
+          headerShown: false 
+        }} 
+      />
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
