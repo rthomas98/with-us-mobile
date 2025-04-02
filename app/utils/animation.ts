@@ -117,3 +117,12 @@ export const useFadeAnimation = (
     animatedStyle,
   };
 };
+
+// Export all animation hooks as a default object
+const AnimationUtils = {
+  useToggleAnimation,
+  useRotationAnimation,
+  useFadeAnimation
+};
+
+export default AnimationUtils;
