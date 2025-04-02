@@ -4,6 +4,7 @@ import Animated, {
   interpolate,
   useAnimatedRef,
   useAnimatedStyle,
+  useSharedValue,
   useScrollViewOffset,
 } from 'react-native-reanimated';
 
@@ -27,19 +28,25 @@ export default function ParallaxScrollView({
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const bottom = useBottomTabOverflow();
+  
   const headerAnimatedStyle = useAnimatedStyle(() => {
+    // Using scrollOffset directly in the worklet function is the recommended approach
+    const translateY = interpolate(
+      scrollOffset.value,
+      [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
+      [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
+    );
+    
+    const scale = interpolate(
+      scrollOffset.value,
+      [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
+      [2, 1, 1]
+    );
+    
     return {
       transform: [
-        {
-          translateY: interpolate(
-            scrollOffset.value,
-            [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
-            [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
-          ),
-        },
-        {
-          scale: interpolate(scrollOffset.value, [-HEADER_HEIGHT, 0, HEADER_HEIGHT], [2, 1, 1]),
-        },
+        { translateY },
+        { scale },
       ],
     };
   });

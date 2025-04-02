@@ -1,180 +1,200 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
-  Text, 
   TouchableOpacity, 
   TextInput,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import MapView, { Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
 
-// Colors
-const black = '#000000';
-const white = '#FFFFFF';
-const gray = '#F5F5F5';
-const lightGray = '#E5E5E5';
-const darkGray = '#888888';
-const green = '#4CAF50';
+import { ThemedText } from '@/components/ThemedText';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Address nickname options
-const addressNicknames = ['Home', 'Work', 'Other'];
+const addressNicknames = ['Home', 'Office', 'Apartment', 'Parent\'s House'];
 
 export default function NewAddressScreen() {
   const router = useRouter();
+  const colorScheme = useColorScheme();
   
   // State
   const [nickname, setNickname] = useState<string>('');
   const [fullAddress, setFullAddress] = useState<string>('');
   const [isDefault, setIsDefault] = useState<boolean>(false);
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
+  const [showNicknameDropdown, setShowNicknameDropdown] = useState<boolean>(false);
+  const [location, setLocation] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
+  // Get user's current location
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      try {
+        let location = await Location.getCurrentPositionAsync({});
+        setLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        });
+      } catch (error) {
+        console.log('Error getting location:', error);
+      }
+    })();
+  }, []);
+  
+  // Handle map region change
+  const onRegionChange = (region: any) => {
+    setLocation(region);
+  };
   
   // Handle save address
   const handleSaveAddress = () => {
-    // Validate inputs
-    if (!nickname) {
-      Alert.alert('Error', 'Please select an address nickname');
-      return;
-    }
-    
-    if (!fullAddress) {
-      Alert.alert('Error', 'Please enter your full address');
-      return;
-    }
-    
     // Show success message
     setShowSuccess(true);
     
     // After a short delay, navigate back
     setTimeout(() => {
       router.back();
-    }, 1500);
+    }, 2000);
   };
   
-  // If showing success message
-  if (showSuccess) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <Stack.Screen 
-          options={{
-            headerShown: false
-          }} 
-        />
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={black} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>New Address</Text>
-          <TouchableOpacity style={styles.notificationIcon} onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={24} color={black} />
-          </TouchableOpacity>
-        </View>
-        
-        <View style={styles.successContainer}>
-          <View style={styles.successContent}>
-            <View style={styles.successIcon}>
-              <Ionicons name="checkmark" size={30} color={white} />
-            </View>
-            <Text style={styles.successTitle}>Congratulations!</Text>
-            <Text style={styles.successText}>Your new address has been added.</Text>
-            <TouchableOpacity 
-              style={styles.successButton}
-              onPress={() => router.back()}
-            >
-              <Text style={styles.successButtonText}>Thanks</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
-  
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container}>
       <Stack.Screen 
         options={{
-          headerShown: false
+          title: 'New Address',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+          headerStyle: {
+            backgroundColor: Colors[colorScheme ?? 'light'].background,
+          },
+          headerShadowVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+          ),
+          headerRight: () => (
+            <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.notificationButton}>
+              <Ionicons name="notifications-outline" size={24} color="#000" />
+            </TouchableOpacity>
+          ),
         }} 
       />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={black} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Address</Text>
-        <TouchableOpacity style={styles.notificationIcon} onPress={() => router.push('/notifications')}>
-          <Ionicons name="notifications-outline" size={24} color={black} />
-        </TouchableOpacity>
-      </View>
       
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
-        <ScrollView style={styles.content}>
-          {/* Map View (Placeholder) */}
+        <ScrollView style={styles.scrollView}>
+          {/* Map View */}
           <View style={styles.mapContainer}>
-            <View style={styles.mapPin}>
-              <Ionicons name="location" size={24} color={black} />
-            </View>
+            <MapView
+              style={styles.map}
+              region={location}
+              onRegionChangeComplete={onRegionChange}
+            >
+              <Marker
+                coordinate={{
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                }}
+              />
+            </MapView>
           </View>
           
           {/* Address Form */}
           <View style={styles.formContainer}>
-            <Text style={styles.formTitle}>Address</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-              <Ionicons name="close" size={24} color={black} />
-            </TouchableOpacity>
+            <View style={styles.formHeader}>
+              <ThemedText style={styles.formTitle}>Address</ThemedText>
+              <TouchableOpacity onPress={() => router.back()}>
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+            
+            {/* Success Message */}
+            {showSuccess && (
+              <View style={styles.successOverlay}>
+                <View style={styles.successCard}>
+                  <View style={styles.successIcon}>
+                    <Ionicons name="checkmark" size={24} color="#fff" />
+                  </View>
+                  <ThemedText style={styles.successTitle}>Congratulations!</ThemedText>
+                  <ThemedText style={styles.successMessage}>Your new address has been added.</ThemedText>
+                  <TouchableOpacity 
+                    style={styles.thanksButton}
+                    onPress={() => router.back()}
+                  >
+                    <ThemedText style={styles.thanksButtonText}>Thanks</ThemedText>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
             
             {/* Address Nickname */}
-            <Text style={styles.inputLabel}>Address Nickname</Text>
-            <TouchableOpacity style={styles.dropdown}>
-              <Text style={nickname ? styles.dropdownText : styles.dropdownPlaceholder}>
-                {nickname || 'Choose one'}
-              </Text>
-              <Ionicons name="chevron-down" size={20} color={black} />
-            </TouchableOpacity>
-            
-            {/* Nickname Options */}
-            <View style={styles.nicknameOptions}>
-              {addressNicknames.map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.nicknameOption,
-                    nickname === option && styles.selectedNicknameOption
-                  ]}
-                  onPress={() => setNickname(option)}
-                >
-                  <Text 
-                    style={[
-                      styles.nicknameOptionText,
-                      nickname === option && styles.selectedNicknameOptionText
-                    ]}
-                  >
-                    {option}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.inputGroup}>
+              <ThemedText style={styles.inputLabel}>Address Nickname</ThemedText>
+              <TouchableOpacity 
+                style={styles.dropdown}
+                onPress={() => setShowNicknameDropdown(!showNicknameDropdown)}
+              >
+                <ThemedText style={nickname ? styles.dropdownText : styles.dropdownPlaceholder}>
+                  {nickname || 'Choose one'}
+                </ThemedText>
+                <Ionicons name="chevron-down" size={20} color="#000" />
+              </TouchableOpacity>
+              
+              {showNicknameDropdown && (
+                <View style={styles.dropdownMenu}>
+                  {addressNicknames.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setNickname(option);
+                        setShowNicknameDropdown(false);
+                      }}
+                    >
+                      <ThemedText style={styles.dropdownItemText}>{option}</ThemedText>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
             
             {/* Full Address */}
-            <Text style={styles.inputLabel}>Full Address</Text>
-            <TextInput
-              style={styles.addressInput}
-              placeholder="Enter your full address..."
-              value={fullAddress}
-              onChangeText={setFullAddress}
-              multiline
-            />
+            <View style={styles.inputGroup}>
+              <ThemedText style={styles.inputLabel}>Full Address</ThemedText>
+              <TextInput
+                style={styles.addressInput}
+                placeholder="Enter your full address..."
+                value={fullAddress}
+                onChangeText={setFullAddress}
+                multiline
+              />
+            </View>
             
             {/* Default Address Checkbox */}
             <TouchableOpacity 
@@ -182,9 +202,9 @@ export default function NewAddressScreen() {
               onPress={() => setIsDefault(!isDefault)}
             >
               <View style={[styles.checkbox, isDefault && styles.checkboxChecked]}>
-                {isDefault && <Ionicons name="checkmark" size={16} color={white} />}
+                {isDefault && <Ionicons name="checkmark" size={16} color="#fff" />}
               </View>
-              <Text style={styles.checkboxLabel}>Make this as a default address</Text>
+              <ThemedText style={styles.checkboxLabel}>Make this as a default address</ThemedText>
             </TouchableOpacity>
             
             {/* Add Button */}
@@ -196,7 +216,7 @@ export default function NewAddressScreen() {
               onPress={handleSaveAddress}
               disabled={!nickname || !fullAddress}
             >
-              <Text style={styles.addButtonText}>Add</Text>
+              <ThemedText style={styles.addButtonText}>Add</ThemedText>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -205,206 +225,189 @@ export default function NewAddressScreen() {
   );
 }
 
+const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: white,
+    backgroundColor: '#fff',
+  },
+  backButton: {
+    marginLeft: 10,
+  },
+  notificationButton: {
+    marginRight: 10,
   },
   keyboardAvoidingView: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: lightGray,
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: black,
-  },
-  notificationIcon: {
-    padding: 8,
-  },
-  content: {
+  scrollView: {
     flex: 1,
   },
   mapContainer: {
-    height: 250,
-    backgroundColor: gray,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: '100%',
+    height: height * 0.3,
+    backgroundColor: '#f5f5f5',
   },
-  mapPin: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: black,
-    justifyContent: 'center',
-    alignItems: 'center',
+  map: {
+    width: '100%',
+    height: '100%',
   },
   formContainer: {
-    padding: 16,
+    padding: 20,
     position: 'relative',
+  },
+  formHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   formTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: black,
-    marginBottom: 24,
+    fontWeight: 'bold',
   },
-  closeButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    padding: 4,
+  inputGroup: {
+    marginBottom: 16,
   },
   inputLabel: {
     fontSize: 16,
-    fontWeight: '500',
-    color: black,
     marginBottom: 8,
   },
   dropdown: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: lightGray,
+    borderColor: '#ddd',
     borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 16,
+    padding: 14,
+    backgroundColor: '#fff',
   },
   dropdownText: {
     fontSize: 16,
-    color: black,
+    color: '#000',
   },
   dropdownPlaceholder: {
     fontSize: 16,
-    color: darkGray,
+    color: '#999',
   },
-  nicknameOptions: {
-    flexDirection: 'row',
-    marginBottom: 24,
+  dropdownMenu: {
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    zIndex: 10,
   },
-  nicknameOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: lightGray,
-    marginRight: 8,
+  dropdownItem: {
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  selectedNicknameOption: {
-    backgroundColor: black,
-  },
-  nicknameOptionText: {
-    fontSize: 14,
-    color: black,
-  },
-  selectedNicknameOptionText: {
-    color: white,
+  dropdownItemText: {
+    fontSize: 16,
   },
   addressInput: {
     borderWidth: 1,
-    borderColor: lightGray,
+    borderColor: '#ddd',
     borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    padding: 14,
     fontSize: 16,
-    minHeight: 100,
+    minHeight: 50,
     textAlignVertical: 'top',
-    marginBottom: 24,
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
+    marginVertical: 16,
   },
   checkbox: {
-    width: 24,
-    height: 24,
+    width: 22,
+    height: 22,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: lightGray,
-    marginRight: 12,
+    borderColor: '#ddd',
+    marginRight: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkboxChecked: {
-    backgroundColor: black,
-    borderColor: black,
+    backgroundColor: '#000',
+    borderColor: '#000',
   },
   checkboxLabel: {
     fontSize: 16,
-    color: black,
   },
   addButton: {
-    backgroundColor: black,
+    backgroundColor: '#000',
     borderRadius: 8,
-    paddingVertical: 16,
+    padding: 16,
     alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 16,
   },
   addButtonDisabled: {
-    backgroundColor: lightGray,
+    backgroundColor: '#ccc',
   },
   addButtonText: {
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-    color: white,
+    fontWeight: 'bold',
   },
-  // Success Screen
-  successContainer: {
-    flex: 1,
+  successOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    zIndex: 100,
   },
-  successContent: {
-    width: '80%',
-    backgroundColor: white,
+  successCard: {
+    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
+    width: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   successIcon: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: green,
+    backgroundColor: '#4CAF50',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
   successTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: black,
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 8,
   },
-  successText: {
+  successMessage: {
     fontSize: 16,
-    color: darkGray,
-    marginBottom: 24,
+    color: '#666',
     textAlign: 'center',
+    marginBottom: 24,
   },
-  successButton: {
-    backgroundColor: black,
+  thanksButton: {
+    backgroundColor: '#000',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
+    width: '100%',
+    alignItems: 'center',
   },
-  successButtonText: {
+  thanksButtonText: {
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-    color: white,
+    fontWeight: 'bold',
   },
 });

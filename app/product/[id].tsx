@@ -698,7 +698,16 @@ export default function ProductDetailsScreen() {
           {/* Reviews Section */}
           {showReviews && (
             <View style={styles.reviewsSection}>
-              <Text style={styles.sectionTitle}>Customer Reviews</Text>
+              <View style={styles.reviewsHeader}>
+                <Text style={styles.sectionTitle}>Customer Reviews</Text>
+                <TouchableOpacity 
+                  style={styles.seeAllReviewsButton}
+                  onPress={() => router.push(`/reviews/${product.id}`)}
+                >
+                  <Text style={styles.seeAllReviewsText}>See All</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#666" />
+                </TouchableOpacity>
+              </View>
               
               {/* Review List */}
               {product.reviewList.map((review) => (
@@ -1145,6 +1154,12 @@ const styles = StyleSheet.create({
   reviewsSection: {
     marginBottom: 24,
   },
+  reviewsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   reviewItem: {
     paddingVertical: 16,
     borderBottomWidth: 1,
@@ -1321,5 +1336,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: white,
+  },
+  seeAllReviewsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: white,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    shadowColor: black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  seeAllReviewsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: black,
+    marginRight: 4,
   },
 });

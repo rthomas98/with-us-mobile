@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -38,6 +38,12 @@ const menuItems = [
     route: '/payment',
   },
   {
+    id: 'reviews',
+    title: 'Reviews',
+    icon: 'star-outline',
+    route: '/reviews',
+  },
+  {
     id: 'notifications',
     title: 'Notifications',
     icon: 'notifications-outline',
@@ -59,6 +65,7 @@ const menuItems = [
 
 export default function AccountScreen() {
   const router = useRouter();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Handle menu item press
   const handleMenuItemPress = (route: string) => {
@@ -66,10 +73,21 @@ export default function AccountScreen() {
     router.push(route as any);
   };
 
+  // Show logout confirmation
+  const showLogoutConfirmation = () => {
+    setShowLogoutModal(true);
+  };
+
   // Handle logout
   const handleLogout = () => {
     // Implement logout logic here
-    router.replace('/(auth)/login');
+    setShowLogoutModal(false);
+    router.replace('/(auth)');
+  };
+
+  // Cancel logout
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   return (
@@ -104,7 +122,7 @@ export default function AccountScreen() {
             </TouchableOpacity>
             
             {/* Add divider after each item except the last one in its group */}
-            {(index !== 4 && index !== 6) && <View style={styles.divider} />}
+            {(index !== 4 && index !== 6 && index !== 7) && <View style={styles.divider} />}
             
             {/* Add section divider after notifications and help center */}
             {(index === 4 || index === 6) && <View style={styles.sectionDivider} />}
@@ -114,13 +132,47 @@ export default function AccountScreen() {
         {/* Logout Button */}
         <TouchableOpacity 
           style={styles.logoutButton} 
-          onPress={handleLogout}
+          onPress={showLogoutConfirmation}
           activeOpacity={0.7}
         >
           <Ionicons name="log-out-outline" size={24} color={red} />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        visible={showLogoutModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalIconContainer}>
+              <Ionicons name="alert-circle" size={64} color={red} />
+            </View>
+            
+            <Text style={styles.modalTitle}>Logout?</Text>
+            <Text style={styles.modalMessage}>Are you sure you want to logout?</Text>
+            
+            <TouchableOpacity 
+              style={styles.logoutConfirmButton} 
+              onPress={handleLogout}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.logoutConfirmText}>Yes, Logout</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.cancelButton} 
+              onPress={cancelLogout}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.cancelText}>No, Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -203,5 +255,62 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: red,
     marginLeft: 16,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContainer: {
+    width: '100%',
+    backgroundColor: white,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+  },
+  modalIconContainer: {
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: black,
+  },
+  modalMessage: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 24,
+    color: '#666',
+  },
+  logoutConfirmButton: {
+    width: '100%',
+    backgroundColor: red,
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  logoutConfirmText: {
+    color: white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cancelButton: {
+    width: '100%',
+    backgroundColor: white,
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  cancelText: {
+    color: black,
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
